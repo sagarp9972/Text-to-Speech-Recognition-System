@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VoiceFlow — Speech Studio</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+  <!-- Background Orbs -->
+  <div class="bg-orb orb1"></div>
+  <div class="bg-orb orb2"></div>
+  <div class="bg-orb orb3"></div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" fill="currentColor"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span>VoiceFlow</span>
+    </div>
+    <div class="status-pill" id="statusPill">
+      <span class="status-dot"></span>
+      <span id="statusText">Ready</span>
+    </div>
+  </header>
+
+  <!-- Main App -->
+  <main class="app-container">
+
+    <!-- TTS Section -->
+    <section class="card tts-card" id="ttsCard">
+      <div class="card-label">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+        </svg>
+        TEXT TO SPEECH
+      </div>
+      <h2 class="card-title">Type & Listen</h2>
+
+      <div class="textarea-wrapper">
+        <textarea
+          id="ttsInput"
+          placeholder="Type anything here and I'll speak it for you..."
+          maxlength="500"
+          spellcheck="false"
+        ></textarea>
+        <div class="char-count"><span id="charCount">0</span>/500</div>
+      </div>
+
+      <!-- Voice Controls -->
+      <div class="controls-grid">
+        <div class="control-group">
+          <label>Voice</label>
+          <select id="voiceSelect" class="control-select">
+            <option value="">Loading voices...</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>Speed <span id="rateVal">1.0x</span></label>
+          <input type="range" id="rateRange" min="0.5" max="2" step="0.1" value="1" class="slider"/>
+        </div>
+        <div class="control-group">
+          <label>Pitch <span id="pitchVal">1.0</span></label>
+          <input type="range" id="pitchRange" min="0.5" max="2" step="0.1" value="1" class="slider"/>
+        </div>
+        <div class="control-group">
+          <label>Volume <span id="volVal">100%</span></label>
+          <input type="range" id="volRange" min="0" max="1" step="0.05" value="1" class="slider"/>
+        </div>
+      </div>
+
+      <!-- TTS Buttons -->
+      <div class="btn-row">
+        <button class="btn btn-speak" id="speakBtn" onclick="startSpeech()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+          Speak
+        </button>
+        <button class="btn btn-pause" id="pauseBtn" onclick="pauseSpeech()" disabled>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
+          </svg>
+          Pause
+        </button>
+        <button class="btn btn-stop" id="stopBtn" onclick="stopSpeech()" disabled>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+          </svg>
+          Stop
+        </button>
+        <button class="btn btn-clear" onclick="clearTTS()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+            <path d="M10 11v6"/><path d="M14 11v6"/>
+          </svg>
+          Clear
+        </button>
+      </div>
+
+      <!-- Sound Wave Visualizer -->
+      <div class="wave-container" id="waveContainer">
+        <div class="wave-bars" id="waveBars">
+          <span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <p class="wave-label" id="waveLabel">Idle</p>
+      </div>
+    </section>
+
+    <!-- Divider -->
+    <div class="divider">
+      <div class="divider-line"></div>
+      <div class="divider-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="17 1 21 5 17 9"/>
+          <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+          <polyline points="7 23 3 19 7 15"/>
+          <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+        </svg>
+      </div>
+      <div class="divider-line"></div>
+    </div>
+
+    <!-- STT Section -->
+    <section class="card stt-card" id="sttCard">
+      <div class="card-label">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="23"/>
+          <line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>
+        SPEECH TO TEXT
+      </div>
+      <h2 class="card-title">Speak & Capture</h2>
+
+      <!-- Mic Button -->
+      <div class="mic-area">
+        <button class="mic-btn" id="micBtn" onclick="toggleRecording()">
+          <div class="mic-ripple" id="micRipple"></div>
+          <svg class="mic-icon" width="36" height="36" viewBox="0 0 24 24" fill="currentColor" id="micIcon">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <p class="mic-hint" id="micHint">Tap to start listening</p>
+      </div>
+
+      <!-- Language Select -->
+      <div class="lang-row">
+        <label>Language</label>
+        <select id="langSelect" class="control-select lang-select">
+          <option value="en-US">🇺🇸 English (US)</option>
+          <option value="en-GB">🇬🇧 English (UK)</option>
+          <option value="es-ES">🇪🇸 Spanish</option>
+          <option value="fr-FR">🇫🇷 French</option>
+          <option value="de-DE">🇩🇪 German</option>
+          <option value="it-IT">🇮🇹 Italian</option>
+          <option value="pt-BR">🇧🇷 Portuguese</option>
+          <option value="ja-JP">🇯🇵 Japanese</option>
+          <option value="ko-KR">🇰🇷 Korean</option>
+          <option value="zh-CN">🇨🇳 Chinese</option>
+          <option value="ar-SA">🇸🇦 Arabic</option>
+          <option value="hi-IN">🇮🇳 Hindi</option>
+        </select>
+      </div>
+
+      <!-- Output Box -->
+      <div class="output-wrapper">
+        <div class="output-label">Recognized Text</div>
+        <div class="output-box" id="sttOutput">
+          <span class="output-placeholder">Your speech will appear here...</span>
+        </div>
+        <div class="output-actions">
+          <button class="action-btn" onclick="copyText()" title="Copy text">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            Copy
+          </button>
+          <button class="action-btn" onclick="sendToTTS()" title="Send to TTS">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="15 10 20 15 15 20"/>
+              <path d="M4 4v7a4 4 0 0 0 4 4h12"/>
+            </svg>
+            Send to TTS
+          </button>
+          <button class="action-btn" onclick="clearSTT()" title="Clear output">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+            </svg>
+            Clear
+          </button>
+        </div>
+      </div>
+
+      <!-- History -->
+      <div class="history-section" id="historySection">
+        <div class="history-header">
+          <span>History</span>
+          <button class="clear-history-btn" onclick="clearHistory()">Clear all</button>
+        </div>
+        <div class="history-list" id="historyList">
+          <p class="no-history">No history yet</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Not Supported Message -->
+  <div class="not-supported" id="notSupported" style="display:none;">
+    <div class="ns-card">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <h3>Browser Not Supported</h3>
+      <p>Please use <strong>Google Chrome</strong> or <strong>Microsoft Edge</strong> for full functionality.</p>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
