@@ -301,6 +301,7 @@ function startRecording() {
       'no-speech':        '🔇 No speech detected. Try again.',
       'audio-capture':    '🎤 No microphone found.',
       'service-not-allowed': '❌ Service not allowed.',
+      'language-not-supported': '⚠️ This language isn\'t supported by your browser\'s speech engine yet.',
     };
 
     showToast(errorMessages[event.error] || `❌ Error: ${event.error}`);
@@ -400,9 +401,7 @@ function addToHistory(text) {
 
   history.unshift(entry);
 
-  // Keep only last 20 entries
-  if (history.length > 20) history = history.slice(0, 20);
-
+  // Store ALL history — no limit, nothing is ever auto-deleted
   localStorage.setItem('vf_history', JSON.stringify(history));
   renderHistory();
 }
